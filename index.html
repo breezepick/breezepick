@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+font-family:Arial;
+margin:0;
+background:#f5f5f5;
+}
+
+.header{
+background:#4285f4;
+color:white;
+padding:15px;
+font-size:20px;
+}
+
+.products{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
+padding:10px;
+}
+
+.product{
+background:white;
+padding:10px;
+border-radius:10px;
+text-align:center;
+}
+
+.product img{
+width:100%;
+border-radius:8px;
+}
+
+.name{
+font-size:14px;
+margin:5px 0;
+}
+
+.price{
+color:red;
+font-weight:bold;
+}
+
+.qty{
+margin:5px 0;
+}
+
+.cart{
+background:white;
+margin:10px;
+padding:10px;
+border-radius:10px;
+}
+
+.total{
+font-size:18px;
+font-weight:bold;
+margin-top:10px;
+}
+
+button{
+padding:5px 8px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+Mini Shop
+</div>
+
+<div class="products" id="products"></div>
+
+<div class="cart">
+
+<h3>cart</h3>
+
+<div id="cartItems"></div>
+
+<div class="total">
+Total price: $<span id="total">0</span>
+</div>
+
+</div>
+
+<script>
+
+const products=[
+{id:1,name:"Little Mia Queen",price:18.87,image:"https://shop.ninesdeonil.com/3358-large_default/little-mia-queen.jpg"},
+{id:2,name:"Little Mia & Mio Underwear",price:11.44,image:"https://shop.ninesdeonil.com/4023-thickbox_default/munecas-little-mia-mio-ropa-interior.jpg"},
+{id:3,name:"Little Mia Princess",price:18.87,image:"https://shop.ninesdeonil.com/3360-large_default/little-mia-princess.jpg"},
+{id:4,name:"Little Mia Angel",price:18.87,image:"https://shop.ninesdeonil.com/3361-large_default/little-mia-angel.jpg"},
+{id:5,name:"Little Mia Ballet",price:18.87,image:"https://shop.ninesdeonil.com/3362-large_default/little-mia-ballet.jpg"},
+{id:6,name:"Little Mia Fairy",price:18.87,image:"https://shop.ninesdeonil.com/3363-large_default/little-mia-fairy.jpg"},
+{id:7,name:"Little Mia Classic",price:18.87,image:"https://shop.ninesdeonil.com/3364-large_default/little-mia-classic.jpg"},
+{id:8,name:"Little Mia Blue",price:18.87,image:"https://shop.ninesdeonil.com/3365-large_default/little-mia-blue.jpg"},
+{id:9,name:"Little Mia Red",price:18.87,image:"https://shop.ninesdeonil.com/3366-large_default/little-mia-red.jpg"},
+{id:10,name:"Little Mia Snow",price:18.87,image:"https://shop.ninesdeonil.com/3367-large_default/little-mia-snow.jpg"},
+{id:11,name:"Little Mia Gold",price:18.87,image:"https://shop.ninesdeonil.com/3368-large_default/little-mia-gold.jpg"},
+{id:12,name:"Little Mia Dream",price:18.87,image:"https://shop.ninesdeonil.com/3369-large_default/little-mia-dream.jpg"},
+{id:13,name:"Little Mia Flower",price:18.87,image:"https://shop.ninesdeonil.com/3370-large_default/little-mia-flower.jpg"},
+{id:14,name:"Little Mia Garden",price:18.87,image:"https://shop.ninesdeonil.com/3371-large_default/little-mia-garden.jpg"},
+{id:15,name:"Little Mia Star",price:18.87,image:"https://shop.ninesdeonil.com/3372-large_default/little-mia-star.jpg"},
+{id:16,name:"Little Mia Magic",price:18.87,image:"https://shop.ninesdeonil.com/3373-large_default/little-mia-magic.jpg"},
+{id:17,name:"Little Mia Cute",price:18.87,image:"https://shop.ninesdeonil.com/3374-large_default/little-mia-cute.jpg"},
+{id:18,name:"Little Mia Lovely",price:18.87,image:"https://shop.ninesdeonil.com/3375-large_default/little-mia-lovely.jpg"},
+{id:19,name:"Little Mia Pearl",price:18.87,image:"https://shop.ninesdeonil.com/3376-large_default/little-mia-pearl.jpg"},
+{id:20,name:"Little Mia Royal",price:18.87,image:"https://shop.ninesdeonil.com/3377-large_default/little-mia-royal.jpg"}
+]
+
+let cart=JSON.parse(localStorage.getItem("cart"))||[]
+
+const productContainer=document.getElementById("products")
+
+products.forEach(p=>{
+
+productContainer.innerHTML+=`
+
+<div class="product">
+
+<img src="${p.image}">
+
+<div class="name">${p.name}</div>
+
+<div class="price">$${p.price}</div>
+
+<div class="qty">
+
+<button onclick="changeQty(${p.id},-1)">-</button>
+
+<input id="qty${p.id}" type="number" value="1" min="1" style="width:40px">
+
+<button onclick="changeQty(${p.id},1)">+</button>
+
+</div>
+
+<button onclick="addCart(${p.id})">cart</button>
+
+</div>
+
+`
+
+})
+
+function changeQty(id,amount){
+
+let input=document.getElementById("qty"+id)
+
+let v=parseInt(input.value)+amount
+
+if(v<1)v=1
+
+input.value=v
+
+}
+
+function addCart(id){
+
+let product=products.find(p=>p.id===id)
+
+let qty=parseInt(document.getElementById("qty"+id).value)
+
+let existing=cart.find(i=>i.id===id)
+
+if(existing){
+existing.qty+=qty
+}else{
+cart.push({...product,qty})
+}
+
+saveCart()
+renderCart()
+
+}
+
+function deleteItem(id){
+
+cart=cart.filter(i=>i.id!==id)
+
+saveCart()
+renderCart()
+
+}
+
+function saveCart(){
+
+localStorage.setItem("cart",JSON.stringify(cart))
+
+}
+
+function renderCart(){
+
+const container=document.getElementById("cartItems")
+
+container.innerHTML=""
+
+let total=0
+
+cart.forEach(i=>{
+
+let sum=i.price*i.qty
+
+total+=sum
+
+container.innerHTML+=`
+
+<div>
+
+${i.name} x ${i.qty} = $${sum.toFixed(2)}
+
+<button onclick="deleteItem(${i.id})">delete</button>
+
+</div>
+
+`
+
+})
+
+document.getElementById("total").innerText=total.toFixed(2)
+
+}
+
+renderCart()
+
+</script>
+
+</body>
+</html>
